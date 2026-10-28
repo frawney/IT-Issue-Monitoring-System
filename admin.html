@@ -641,6 +641,60 @@ body.wide .wrap{max-width:min(1100px,92vw)}
 .wrap{max-width:min(860px,70vw)}
 body.wide .wrap{max-width:min(940px,78vw)}
 }
+/* ===== v7: filter Rincian rapi, dua baris ===== */
+@media (min-width:700px){
+.fcard .ctl{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:10px 12px;align-items:center}
+.fcard .ctl>*{min-width:0;margin:0}
+.fcard .ctl .seg{grid-column:1 / span 2;grid-row:1;justify-self:start;max-width:100%}
+.fcard .ctl .srch{grid-column:3;grid-row:1;flex:none}
+.fcard .ctl .fbox:nth-of-type(1),.fcard .ctl>.fbox:nth-child(3){grid-column:1;grid-row:2}
+.fcard .ctl>.fbox:nth-child(4){grid-column:2;grid-row:2}
+.fcard .ctl>.lnk{grid-column:3;grid-row:2;justify-self:start}
+.fbox input[type=date]{width:104px;font-size:12.5px}
+.fbox select{max-width:130px}
+}
+/* ===== v8: ukuran isi diperkecil lagi (header tetap) ===== */
+@media (min-width:860px){
+body{font-size:12px}
+.wrap{max-width:min(820px,68vw)}
+body.wide .wrap{max-width:min(900px,76vw)}
+.card{padding:13px;border-radius:18px}
+.fcard,body.wide .fcard{padding:18px 20px 12px}
+body.wide .fcard .rh h2,.sec h2,.card h2{font-size:14px}
+body.wide .fcard .rh .sub,.sub{font-size:11px}
+.total .big{font-size:26px}
+.total b{font-size:14px}
+.pie{width:108px;height:108px}
+.ring{width:46px;height:46px}
+.ring span{font-size:13px}
+.tile b{font-size:20px}
+.fcard .ctl{gap:8px 10px}
+.fcard .ctl .srch input{min-height:36px;padding:6px 12px 6px 34px;font-size:12px}
+.fcard .ctl .srch .i{width:15px;height:15px;left:11px}
+.fbox{min-height:36px;padding:4px 10px;gap:8px;border-radius:12px}
+.fbox>svg{width:15px;height:15px}
+.fbox .fl{font-size:9.5px}
+.fbox input,.fbox select{font-size:11.5px}
+.fbox input[type=date]{width:92px;font-size:11.5px}
+.fbox select{max-width:112px}
+.seg button{font-size:11.5px;padding:5px 10px}
+.seg em{font-size:10px}
+.lnk{font-size:11.5px}
+.dlb{padding:8px 12px}
+.dlb .dln{font-size:12px}
+.dlb .chk{font-size:11.5px}
+.dlb .acts .btn{min-height:30px;padding:5px 12px;font-size:11.5px}
+.fcard .tbl{font-size:11.5px}
+.fcard .tbl th{font-size:10.5px;padding:8px 6px}
+.fcard .tbl td{padding:8px 6px}
+.fcard .tbl .tk{font-size:11px}
+.fcard .tbl .wn2{font-size:12px}
+.fcard .tbl .wu2,.fcard .tbl .dt2,.fcard .tbl .dt{font-size:10.5px}
+.fcard .tbl .ur2{font-size:11.5px}
+.fcard .tbl .badge{font-size:10.5px}
+.fcard .tbl .act{font-size:10px;padding:3px 8px}
+.item .mid b,.item .mid .ur{font-size:12px}
+}
 </style>
 </head>
 <body>
