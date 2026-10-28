@@ -160,6 +160,50 @@ textarea.fld{min-height:190px}
   .btn:active{transform:scale(.985)}
 }
 .fld:focus-visible{outline:none}
+
+/* ===== Mode kompak desktop (hasil deploy terlalu besar) ===== */
+@media(min-width:640px){
+body{font-size:15px}
+:root{--w:700px}
+.hero{padding:calc(56px + env(safe-area-inset-top,0px)) 24px 96px;border-radius:0 0 36px 36px}
+main{margin-top:-64px}
+.hero small{font-size:12px}
+.hero h1{font-size:32px}
+.logo{height:64px;min-width:64px;border-radius:20px;padding:8px 14px}
+.hb{gap:16px}
+.card{padding:24px}
+h2{font-size:19px}
+.hint{font-size:13.5px}
+.lbl{font-size:14px;margin:14px 0 5px}
+.fld{min-height:46px;padding:10px 14px;border-radius:14px;font-size:15px}
+textarea.fld{min-height:120px}
+.ferr{font-size:13.5px}
+.err{font-size:14px}
+.addfoto{padding:12px 14px}
+.addfoto small{font-size:12.5px}
+.btn{min-height:50px;font-size:16px}
+.who{font-size:14px;padding:10px 14px}
+.av{width:40px;height:40px}
+.wt small{font-size:13px}
+.sub{font-size:13.5px}
+.chip{font-size:13.5px;padding:8px 12px;min-height:36px}
+.code{font-size:24px}
+.res h3{font-size:13.5px}
+.tab{font-size:14px;padding:8px 18px}
+.tabbar{top:calc(18px + env(safe-area-inset-top,0px))}
+}
+@media(min-width:980px){
+:root{--w:1040px}
+#v-lapor{padding:30px 36px}
+.form{column-gap:44px}
+.colB,.colF{padding-left:44px}
+textarea.fld{min-height:150px}
+.colF{padding-top:16px}
+.colF .lbl{font-size:19px;margin:0 0 10px}
+.colF .addfoto{min-height:120px}
+#v-lacak{grid-template-columns:380px minmax(0,1fr)}
+.res img{max-height:320px}
+}
 </style>
 </head>
 <body>

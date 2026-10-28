@@ -504,6 +504,45 @@ body.wide .wrap{max-width:1360px}
 .hbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .hbtn:hover{filter:brightness(1.06)}
 @media (prefers-reduced-motion:reduce){#app{transition:none}}
+
+/* ===== Mode kompak desktop (hasil deploy terlalu besar) ===== */
+@media (min-width:700px){
+body{font-size:14px}
+.logo{height:62px;min-width:62px;border-radius:20px;padding:7px 12px}
+.hd small{font-size:13px}
+.hd h1{font-size:clamp(24px,3vw,30px)}
+.hd .tag{font-size:12.5px}
+}
+@media (min-width:860px){
+header.top{padding:calc(env(safe-area-inset-top,0px) + 18px) 0 80px;border-radius:0 0 36px 36px}
+main{margin-top:-54px}
+#nav button{font-size:13px;padding:8px 14px}
+#nav svg{width:18px;height:18px}
+.card{padding:18px}
+.card h2{font-size:15px}
+.card h3{font-size:13px}
+.total b{font-size:16px}
+.total .big{font-size:34px}
+.rg b{font-size:13px}
+.rg small{font-size:11px}
+.ring{width:58px;height:58px}
+.ring span{font-size:16px}
+.tile{min-height:80px;padding:12px}
+.tile b{font-size:24px}
+.tile span{font-size:12px}
+.item .mid b{font-size:14px}
+.item .mid .ur{font-size:14px}
+.tbl{font-size:13px}
+.tbl th{font-size:12px;padding:10px 8px}
+.srch input{font-size:14px;padding:10px 14px 10px 42px}
+.seg button{font-size:13px;padding:7px 14px}
+.lnk{font-size:13px}
+}
+body{--wrapmax:1040px}
+@media (min-width:1200px){
+.wrap{max-width:1100px}
+body.wide .wrap{max-width:1240px}
+}
 </style>
 </head>
 <body>
