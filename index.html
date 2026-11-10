@@ -264,7 +264,7 @@ textarea.fld{min-height:105px}
     </div>
 
     <div class="colF">
-      <div class="lbl" id="l-foto">Dokumentasi <span style="font-weight:500;color:var(--mut)">(opsional, foto atau video)</span></div>
+      <div class="lbl" id="l-foto">Dokumentasi <span style="font-weight:500;color:var(--mut)">(opsional, foto maks. 20 MB, video maks. 100 MB)</span></div>
       <div class="fotoopts" id="addfoto" role="group" aria-labelledby="l-foto" aria-describedby="e-foto">
         <button type="button" class="addfoto" id="btnCam"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span><b>Ambil foto</b><small>Buka kamera</small></span></button>
         <button type="button" class="addfoto" id="btnGal"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span><b>Foto / video dari galeri</b><small>Video maks. 10 MB</small></span></button>
@@ -337,7 +337,7 @@ var KAT=[
   ['Aplikasi & akun',['Aplikasi / Software','Akun / Email','Website / Sistem informasi']]
 ];
 var STEP=[['Baru','Diterima'],['Diproses','Diproses'],['Selesai','Selesai']];
-var MAKS_FOTO_MB=10,MAKS_VIDEO_MB=10,MAKS_FOTO_B=450000,fotoUrl='';
+var MAKS_FOTO_MB=20,MAKS_VIDEO_MB=100,MAKS_FOTO_B=450000,fotoUrl='';
 var kat='',foto='',kodeBaru='',fotoBusy=false;
 var $=function(i){return document.getElementById(i)};
 var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
@@ -409,7 +409,7 @@ var MIME_EXT={mp4:'video/mp4',m4v:'video/mp4',webm:'video/webm',mov:'video/quick
 function bacaVideo(f){return new Promise(function(res,rej){
   var ext=(f.name.split('.').pop()||'').toLowerCase(),mime=/^video\/(mp4|webm|quicktime)$/.test(f.type)?f.type:MIME_EXT[ext];
   if(!mime)return rej(new Error('Format video tidak didukung. Gunakan MP4, MOV, atau WEBM.'));
-  if(f.size>MAKS_VIDEO_MB*1048576)return rej(new Error('Video terlalu besar ('+(f.size/1048576).toFixed(1)+' MB). Maksimal '+MAKS_VIDEO_MB+' MB, rekam lebih singkat (sekitar 20-30 detik).'));
+  if(f.size>MAKS_VIDEO_MB*1048576)return rej(new Error('Video terlalu besar ('+(f.size/1048576).toFixed(1)+' MB). Maksimal '+MAKS_VIDEO_MB+' MB, rekam lebih singkat atau kecilkan resolusi videonya.'));
   var fr=new FileReader();fr.onerror=function(){rej(new Error('Video tidak bisa dibaca.'))};
   fr.onload=function(){res({d:String(fr.result).replace(/^data:[^;,]*/,'data:'+mime),url:URL.createObjectURL(f)})};
   fr.readAsDataURL(f)})}
