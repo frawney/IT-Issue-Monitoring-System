@@ -223,6 +223,10 @@ textarea.fld{min-height:105px}
 .fld{min-height:38px}
 .btn{min-height:42px;font-size:14.5px}
 }
+.chip{border-radius:14px;text-align:left;line-height:1.25}
+.chip b{display:block;font-weight:700}.chip span{display:block;font-size:12px;color:var(--mut);min-height:15px}
+.prev video{display:block;width:100%;max-height:240px;border-radius:14px;background:#000}
+.res .vid{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:14px;margin-top:6px;background:#000}
 </style>
 </head>
 <body>
@@ -260,16 +264,16 @@ textarea.fld{min-height:105px}
     </div>
 
     <div class="colF">
-      <div class="lbl" id="l-foto">Foto kendala</div>
+      <div class="lbl" id="l-foto">Dokumentasi <span style="font-weight:500;color:var(--mut)">(opsional, foto atau video)</span></div>
       <div class="fotoopts" id="addfoto" role="group" aria-labelledby="l-foto" aria-describedby="e-foto">
         <button type="button" class="addfoto" id="btnCam"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span><b>Ambil foto</b><small>Buka kamera</small></span></button>
-        <button type="button" class="addfoto" id="btnGal"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span><b>Pilih dari galeri</b><small>Foto yang sudah ada</small></span></button>
+        <button type="button" class="addfoto" id="btnGal"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span><b>Foto / video dari galeri</b><small>Video maks. 10 MB</small></span></button>
       </div>
-      <input type="file" id="fileGal" class="sr" accept="image/*" tabindex="-1" aria-hidden="true">
+      <input type="file" id="fileGal" class="sr" accept="image/*,video/*" tabindex="-1" aria-hidden="true">
       <input type="file" id="fileCam" class="sr" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
       <div class="fotost" id="fotoTxt" role="status" aria-live="polite"></div>
       <div class="ferr" id="e-foto" role="alert"></div>
-      <div class="prev" id="prev" hidden><img id="prevImg" alt="Foto kendala"><button type="button" id="hapusFoto">Hapus foto</button></div>
+      <div class="prev" id="prev" hidden><img id="prevImg" alt="Dokumentasi kendala" hidden><video id="prevVid" controls playsinline muted hidden></video><button type="button" id="hapusFoto">Hapus</button></div>
     </div>
 
     <div class="colB">
@@ -279,9 +283,6 @@ textarea.fld{min-height:105px}
         <label class="lbl" for="nama">Nama lengkap</label>
         <input id="nama" class="fld" autocomplete="name" aria-describedby="e-nama" placeholder="Contoh: Budi Santoso">
         <div class="ferr" id="e-nama" role="alert"></div>
-        <label class="lbl" for="unit">Unit kerja</label>
-        <input id="unit" class="fld" autocomplete="organization" aria-describedby="e-unit" placeholder="Contoh: BLSDM Komdigi Manado">
-        <div class="ferr" id="e-unit" role="alert"></div>
       </div>
     </div>
     </div>
@@ -336,6 +337,7 @@ var KAT=[
   ['Aplikasi & akun',['Aplikasi / Software','Akun / Email','Website / Sistem informasi']]
 ];
 var STEP=[['Baru','Diterima'],['Diproses','Diproses'],['Selesai','Selesai']];
+var MAKS_FOTO_MB=10,MAKS_VIDEO_MB=10,MAKS_FOTO_B=450000,fotoUrl='';
 var kat='',foto='',kodeBaru='',fotoBusy=false;
 var $=function(i){return document.getElementById(i)};
 var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
@@ -376,7 +378,7 @@ function compress(file){return new Promise(function(res,rej){
     im.onload=function(){var s=Math.min(1,900/Math.max(im.width,im.height)),cv=document.createElement('canvas');
       cv.width=Math.round(im.width*s);cv.height=Math.round(im.height*s);
       var cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(im,0,0,cv.width,cv.height);
-      res(cv.toDataURL('image/jpeg',0.7))};
+      var q=.7,d=cv.toDataURL('image/jpeg',q);while(d.length>MAKS_FOTO_B&&q>.3){q-=.1;d=cv.toDataURL('image/jpeg',q)}res(d)};
     im.src=fr.result};
   fr.readAsDataURL(file)})}
 
@@ -389,12 +391,11 @@ function show(v){
 document.querySelectorAll('.tab').forEach(function(b){b.onclick=function(){show(b.dataset.v==='lapor'&&kodeBaru&&!$('v-ok').hidden?'ok':b.dataset.v)}});
 
 // Pesan kesalahan per kolom
-var FIELD={des:'des',kat:'kat',foto:'addfoto',nama:'nama',unit:'unit'};
+var FIELD={des:'des',kat:'kat',foto:'addfoto',nama:'nama'};
 function fail(k,msg){$('e-'+k).textContent=msg;var el=$(FIELD[k]);el.classList.add('bad');if(k!=='foto')el.setAttribute('aria-invalid','true')}
 function clearErr(k){$('e-'+k).textContent='';var el=$(FIELD[k]);el.classList.remove('bad');el.removeAttribute('aria-invalid')}
 $('des').oninput=function(){if(this.value.trim())clearErr('des')};
 $('nama').oninput=function(){if(this.value.trim())clearErr('nama')};
-$('unit').oninput=function(){if(this.value.trim())clearErr('unit')};
 
 // Jenis kendala: dropdown
 $('kat').insertAdjacentHTML('beforeend',KAT.map(function(g){
@@ -403,12 +404,26 @@ $('kat').insertAdjacentHTML('beforeend',KAT.map(function(g){
 $('kat').onchange=function(){kat=this.value;this.classList.toggle('empty',!kat);if(kat)clearErr('kat')};
 
 // Foto: kamera langsung atau galeri
-function resetFotoUI(){foto='';$('prev').hidden=true;$('fotoTxt').textContent=''}
+function resetFotoUI(){foto='';if(fotoUrl){URL.revokeObjectURL(fotoUrl);fotoUrl=''}$('prev').hidden=true;$('prevImg').hidden=true;$('prevVid').hidden=true;$('prevVid').removeAttribute('src');$('fotoTxt').textContent=''}
+var MIME_EXT={mp4:'video/mp4',m4v:'video/mp4',webm:'video/webm',mov:'video/quicktime'};
+function bacaVideo(f){return new Promise(function(res,rej){
+  var ext=(f.name.split('.').pop()||'').toLowerCase(),mime=/^video\/(mp4|webm|quicktime)$/.test(f.type)?f.type:MIME_EXT[ext];
+  if(!mime)return rej(new Error('Format video tidak didukung. Gunakan MP4, MOV, atau WEBM.'));
+  if(f.size>MAKS_VIDEO_MB*1048576)return rej(new Error('Video terlalu besar ('+(f.size/1048576).toFixed(1)+' MB). Maksimal '+MAKS_VIDEO_MB+' MB, rekam lebih singkat (sekitar 20-30 detik).'));
+  var fr=new FileReader();fr.onerror=function(){rej(new Error('Video tidak bisa dibaca.'))};
+  fr.onload=function(){res({d:String(fr.result).replace(/^data:[^;,]*/,'data:'+mime),url:URL.createObjectURL(f)})};
+  fr.readAsDataURL(f)})}
 function pakaiFoto(f){
-  fotoBusy=true;$('fotoTxt').textContent='Memproses foto...';$('err').textContent='';clearErr('foto');
-  compress(f).then(function(d){foto=d;$('prevImg').src=d;$('prev').hidden=false;$('fotoTxt').textContent='';clearErr('foto')})
-    .catch(function(x){resetFotoUI();fail('foto',x.message)})
-    .then(function(){fotoBusy=false});
+  var vid=/^video\//.test(f.type)||/\.(mp4|m4v|mov|webm)$/i.test(f.name);
+  $('err').textContent='';clearErr('foto');resetFotoUI();
+  if(!vid&&f.size>MAKS_FOTO_MB*1048576){fail('foto','Foto terlalu besar. Maksimal '+MAKS_FOTO_MB+' MB.');return}
+  fotoBusy=true;$('fotoTxt').textContent=vid?'Membaca video...':'Memproses foto...';
+  (vid?bacaVideo(f):compress(f).then(function(d){return {d:d}})).then(function(o){
+    foto=o.d;
+    if(vid){fotoUrl=o.url;$('prevVid').src=o.url;$('prevVid').hidden=false}else{$('prevImg').src=o.d;$('prevImg').hidden=false}
+    $('prev').hidden=false;$('fotoTxt').textContent='';clearErr('foto')})
+  .catch(function(x){resetFotoUI();fail('foto',x.message)})
+  .then(function(){fotoBusy=false});
 }
 function dariInput(e){var f=e.target.files[0];if(!f)return;pakaiFoto(f);e.target.value=''}
 $('fileGal').onchange=dariInput;
@@ -450,29 +465,27 @@ $('hapusFoto').onclick=resetFotoUI;
 // Data pelapor diingat di perangkat ini
 function renderPel(){
   var p=ls.get('prakom_profil')||{};
-  $('nama').value=p.nama||'';$('unit').value=p.unit||'';
-  var ada=!!(p.nama&&p.unit);
+  $('nama').value=p.nama||'';
+  var ada=!!p.nama;
   $('pel').hidden=ada;$('who').hidden=!ada;
-  if(ada)$('whoTxt').innerHTML='<span class="av" aria-hidden="true">'+esc(p.nama.trim().charAt(0).toUpperCase())+'</span><span class="wt"><b>'+esc(p.nama)+'</b><small>'+esc(p.unit)+'</small></span>';
+  if(ada)$('whoTxt').innerHTML='<span class="av" aria-hidden="true">'+esc(p.nama.trim().charAt(0).toUpperCase())+'</span><span class="wt"><b>'+esc(p.nama)+'</b></span>';
 }
 $('ubah').onclick=function(){$('pel').hidden=false;$('who').hidden=true;$('nama').focus()};
 
 function validate(){
-  var bad=null,des=$('des').value.trim(),nama=$('nama').value.trim(),unit=$('unit').value.trim();
-  ['des','kat','foto','nama','unit'].forEach(clearErr);
+  var bad=null,des=$('des').value.trim(),nama=$('nama').value.trim();
+  ['des','kat','foto','nama'].forEach(clearErr);
   if(!des){fail('des','Tulis kendala yang Anda alami.');bad=bad||'des'}
   if(!kat){fail('kat','Pilih jenis kendala.');bad=bad||'kat'}
-  if(!foto){fail('foto','Lampirkan foto kendala.');bad=bad||'foto'}
-  if(!nama||!unit){$('pel').hidden=false;$('who').hidden=true}
+  if(!nama){$('pel').hidden=false;$('who').hidden=true}
   if(!nama){fail('nama','Isi nama lengkap Anda.');bad=bad||'nama'}
-  if(!unit){fail('unit','Isi unit kerja Anda.');bad=bad||'unit'}
   return bad;
 }
 
 var progT=[];
 function progStart(){
   var p=$('prog'),t=p.querySelector('span');p.hidden=false;t.textContent='Mengirim laporan. Mohon tunggu dan jangan tutup halaman.';
-  progT=[setTimeout(function(){t.textContent='Masih berjalan, server sedang menyimpan laporan dan foto.'},6000),
+  progT=[setTimeout(function(){t.textContent='Masih berjalan, server sedang menyimpan laporan dan dokumentasi.'},6000),
          setTimeout(function(){t.textContent='Hampir selesai. Jangan kirim ulang agar laporan tidak ganda.'},15000)];
 }
 function progStop(){progT.forEach(clearTimeout);$('prog').hidden=true}
@@ -482,16 +495,16 @@ $('kirim').onclick=function(){
   if(fotoBusy){err.textContent='Foto masih diproses. Tunggu sebentar lalu kirim lagi.';return}
   var bad=validate();
   if(bad){
-    err.textContent='Semua kolom wajib diisi.';
+    err.textContent='Lengkapi isian yang ditandai merah.';
     var t=bad==='foto'?$('btnCam'):$(bad);t.focus();
     $(bad==='foto'?'addfoto':bad).scrollIntoView({block:'center',behavior:'smooth'});
     return;
   }
-  var des=$('des').value.trim(),nama=$('nama').value.trim(),unit=$('unit').value.trim();
+  var des=$('des').value.trim(),nama=$('nama').value.trim();
   var b=$('kirim');b.disabled=true;b.textContent='Mengirim...';progStart();
-  api('submitReport',{nama:nama,unit:unit,kategori:kat,deskripsi:des,fotoData:foto}).then(function(id){
-    ls.set('prakom_profil',{nama:nama,unit:unit});
-    var l=(ls.get('prakom_tiket')||[]).filter(function(x){return x!==id});l.unshift(id);ls.set('prakom_tiket',l.slice(0,5));
+  api('submitReport',{nama:nama,kategori:kat,deskripsi:des,fotoData:foto}).then(function(id){
+    ls.set('prakom_profil',{nama:nama});
+    var l=tiketList().filter(function(x){return x.id!==id});l.unshift({id:id,t:Date.now()});ls.set('prakom_tiket',l.slice(0,5));
     kodeBaru=id;$('kode').textContent=id;
     $('des').value='';kat='';$('kat').value='';$('kat').classList.add('empty');resetFotoUI();
     renderPel();show('ok');
@@ -502,9 +515,18 @@ $('lihat').onclick=function(){show('lacak');cari(kodeBaru)};
 $('lagi').onclick=function(){$('salin').textContent='Salin kode';show('lapor')};
 
 // Status laporan
+function tiketList(){return (ls.get('prakom_tiket')||[]).map(function(x){return typeof x==='string'?{id:x,t:0}:x})}
+var fmtTgl=function(t){return new Date(Number(t)).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})};
 function renderSaved(){
-  var l=ls.get('prakom_tiket')||[];
-  $('saved').innerHTML=l.length?'<div class="lbl">Laporan saya</div><div class="chips">'+l.map(function(k){return '<button type="button" class="chip" data-c="'+esc(k)+'">'+esc(k)+'</button>'}).join('')+'</div>':'';
+  var l=tiketList();
+  $('saved').innerHTML=l.length?'<div class="lbl">Laporan saya</div><div class="chips">'+l.map(function(k){return '<button type="button" class="chip" data-c="'+esc(k.id)+'"><b>'+esc(k.id)+'</b><span>'+(k.t?fmtTgl(k.t):'')+'</span></button>'}).join('')+'</div>':'';
+  // tiket lama yang belum punya tanggal: ambil dari server sekali, lalu simpan
+  l.filter(function(k){return !k.t}).forEach(function(k){
+    api('trackReport',k.id).then(function(r){
+      if(!r||!r.createdAt)return;
+      var cur=tiketList();cur.forEach(function(x){if(x.id===k.id)x.t=r.createdAt});ls.set('prakom_tiket',cur);renderSaved();
+    }).catch(function(){});
+  });
 }
 $('saved').onclick=function(e){var b=e.target.closest('.chip');if(b)cari(b.dataset.c)};
 $('cari').onclick=function(){cari($('lk').value)};
@@ -518,14 +540,21 @@ function cari(k){
     hasil(r);
   }).catch(function(e){$('res').hidden=true;$('lerr').textContent=e.message}).then(function(){$('cari').disabled=false;$('cari').textContent='Cari'});
 }
+function media(u,alt){
+  if(!u)return '';
+  var m=/drive\.google\.com\/file\/d\/([^\/?]+)/.exec(u);
+  if(m)return '<iframe class="vid" src="https://drive.google.com/file/d/'+esc(m[1])+'/preview" allow="autoplay" allowfullscreen loading="lazy" title="'+esc(alt)+'"></iframe>';
+  return '<img src="'+esc(u)+'" alt="'+esc(alt)+'" onerror="this.style.display=\'none\'">';
+}
 function hasil(r){
   var cur=STEP.map(function(s){return s[0]}).indexOf(r.status);if(cur<0)cur=0;
   var st=STEP.map(function(s,i){return (i?'<span class="bar'+(i<=cur?' on':'')+'"></span>':'')+'<div class="st'+(i<=cur?' on':'')+'"><i>'+(i<cur||r.status==='Selesai'?'&#10003;':i+1)+'</i>'+s[1]+'</div>'}).join('');
   var h='<h2>'+esc(r.id)+'</h2><div class="sub">'+esc(r.kategori||'Lainnya')+' &middot; dilaporkan '+fmt(r.createdAt)+'</div><div class="steps">'+st+'</div>'+
     '<h3>Kendala</h3><p>'+esc(r.deskripsi)+'</p>';
-  if(r.foto)h+='<img src="'+esc(r.foto)+'" alt="Foto kendala" onerror="this.style.display=\'none\'">';
-  if(r.solusi)h+='<h3>Tindakan Prakom</h3><p>'+esc(r.solusi)+'</p>';
-  if(r.bukti)h+='<h3>Bukti penyelesaian'+(r.selesaiAt?' ('+fmt(r.selesaiAt)+')':'')+'</h3><img src="'+esc(r.bukti)+'" alt="Bukti penyelesaian" onerror="this.style.display=\'none\'">';
+  if(r.foto)h+='<h3>Dokumentasi kendala</h3>'+media(r.foto,'Dokumentasi kendala');
+  h+='<h3>Status terakhir</h3><p><b>'+esc(STEP[cur][1])+'</b></p>';
+  if(r.solusi)h+='<h3>Solusi / tindak lanjut Prakom</h3><p>'+esc(r.solusi)+'</p>';
+  if(r.bukti)h+='<h3>Dokumentasi tindak lanjut'+(r.selesaiAt?' ('+fmt(r.selesaiAt)+')':'')+'</h3>'+media(r.bukti,'Dokumentasi tindak lanjut');
   $('res').innerHTML=h;$('res').hidden=false;
 }
 renderPel();
