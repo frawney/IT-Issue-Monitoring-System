@@ -227,6 +227,15 @@ textarea.fld{min-height:105px}
 .chip b{display:block;font-weight:700}.chip span{display:block;font-size:12px;color:var(--mut);min-height:15px}
 .prev video{display:block;width:100%;max-height:240px;border-radius:14px;background:#000}
 .res .vid{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:14px;margin-top:6px;background:#000}
+.tkt{border:1.5px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.tkt .th,.tkt .trow{display:grid;grid-template-columns:minmax(110px,38%) minmax(0,1fr);align-items:center;gap:12px;padding:0 14px;width:100%;text-align:left}
+.tkt .th{background:#f4f1e6;color:var(--mut);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;min-height:34px}
+.tkt .trow{border:0;border-top:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:14px;min-height:46px;cursor:pointer}
+.tkt .trow:hover,.tkt .trow:focus-visible{background:#eef2fd}
+.tkt .trow:focus-visible{outline:2px solid var(--pri);outline-offset:-2px}
+.tkt .trow .d{color:var(--mut);white-space:nowrap}
+.tkt .trow .c{font-weight:700;color:var(--priD);word-break:break-all}
+.tkt .trow:active{background:#e3eafc}
 </style>
 </head>
 <body>
@@ -519,7 +528,7 @@ function tiketList(){return (ls.get('prakom_tiket')||[]).map(function(x){return 
 var fmtTgl=function(t){return new Date(Number(t)).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})};
 function renderSaved(){
   var l=tiketList();
-  $('saved').innerHTML=l.length?'<div class="lbl">Laporan saya</div><div class="chips">'+l.map(function(k){return '<button type="button" class="chip" data-c="'+esc(k.id)+'"><b>'+esc(k.id)+'</b><span>'+(k.t?fmtTgl(k.t):'')+'</span></button>'}).join('')+'</div>':'';
+  $('saved').innerHTML=l.length?'<div class="lbl">Laporan saya</div><div class="tkt"><div class="th" aria-hidden="true"><span>Tanggal</span><span>Kode tiket</span></div>'+l.map(function(k){return '<button type="button" class="trow" data-c="'+esc(k.id)+'" aria-label="Tiket '+esc(k.id)+(k.t?', '+fmtTgl(k.t):'')+'"><span class="d">'+(k.t?fmtTgl(k.t):'-')+'</span><span class="c">'+esc(k.id)+'</span></button>'}).join('')+'</div>':'';
   // tiket lama yang belum punya tanggal: ambil dari server sekali, lalu simpan
   l.filter(function(k){return !k.t}).forEach(function(k){
     api('trackReport',k.id).then(function(r){
@@ -528,7 +537,7 @@ function renderSaved(){
     }).catch(function(){});
   });
 }
-$('saved').onclick=function(e){var b=e.target.closest('.chip');if(b)cari(b.dataset.c)};
+$('saved').onclick=function(e){var b=e.target.closest('.trow');if(b)cari(b.dataset.c)};
 $('cari').onclick=function(){cari($('lk').value)};
 $('lk').onkeydown=function(e){if(e.key==='Enter')cari($('lk').value)};
 function cari(k){
