@@ -1047,7 +1047,23 @@ function compress(file){return new Promise(function(res){
 var MAKS_FOTO_MB=20,MAKS_VIDEO_MB=100,VID_MIME={mp4:"video/mp4",m4v:"video/mp4",webm:"video/webm",mov:"video/quicktime"};
 function isVid(f){return /^video\//.test(f.type)||/\.(mp4|m4v|mov|webm)$/i.test(f.name||"")}
 function vidMime(f){var e=((f.name||"").split(".").pop()||"").toLowerCase();return /^video\/(mp4|webm|quicktime)$/.test(f.type)?f.type:VID_MIME[e]}
-function bacaVideo(f){return new Promise(function(res,rej){var fr=new FileReader();fr.onerror=function(){rej(new Error("Video tidak bisa dibaca."))};fr.onload=function(){res(String(fr.result).replace(/^data:[^;,]*/,"data:"+vidMime(f)))};fr.readAsDataURL(f)})}
+/* Unggah video per potongan 3 MB (tidak memuat seluruh video ke memori). Mengembalikan kode sesi (ref). */
+function unggahVideo(call,file,mime,untuk,pin,onProg){
+  var CH=3145728,ref='',off=0,n=0,batas=Math.ceil(file.size/CH)*4+12;
+  function b64(blob){return new Promise(function(res,rej){var fr=new FileReader();fr.onerror=function(){rej(new Error('Video tidak bisa dibaca.'))};fr.onload=function(){res(String(fr.result).split(',')[1]||'')};fr.readAsDataURL(blob)})}
+  function tunggu(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  function terima(h){off=h.off||0;onProg(Math.min(100,Math.round(off*100/file.size)));return !!h.done}
+  function kirim(coba){
+    if(++n>batas)return Promise.reject(new Error('Unggahan video tidak berjalan. Coba lagi.'));
+    return b64(file.slice(off,Math.min(off+CH,file.size))).then(function(d){return call('uploadPotong',[ref,off,d])})
+      .then(function(h){return terima(h)?ref:kirim(0)},function(e){
+        if(coba>=3)throw e;
+        return tunggu(1500*(coba+1)).then(function(){return call('uploadStatus',[ref])})
+          .then(function(h){return terima(h)?ref:kirim(coba+1)},function(){return kirim(coba+1)});
+      });
+  }
+  return call('uploadMulai',[{mime:mime,size:file.size,untuk:untuk},pin]).then(function(r){ref=r.ref;onProg(0);return kirim(0)});
+}
 function bindList(){
   document.querySelectorAll(".click").forEach(function(el){
     el.onclick=function(){sel=el.dataset.id;flash="";editing=false;render();window.scrollTo(0,0)};
@@ -1118,11 +1134,19 @@ function bind(){
   if($("a-cancel"))$("a-cancel").onclick=function(){editing=false;render()};
   if($("a-save"))$("a-save").onclick=async function(){
     var btn=$("a-save"),r=reports.find(function(x){return x.id===sel}),st=$("a-st").value,sol=$("a-sol").value.trim(),peg=pegValue(),f=buktiFile;
-    var bd="";try{bd=f?(isVid(f)?await bacaVideo(f):await compress(f)):""}catch(x){$("a-err").textContent=x.message;return}
     if(!peg){$("a-err").textContent="Nama Pegawai wajib diisi.";return}
     if(!sol){$("a-err").textContent="Tindakan/solusi wajib diisi.";return}
-    if(st==="Selesai"&&!bd&&!r.bukti){$("a-err").textContent="Bukti penyelesaian wajib diunggah untuk status Selesai.";return}
+    if(st==="Selesai"&&!f&&!r.bukti){$("a-err").textContent="Bukti penyelesaian wajib diunggah untuk status Selesai.";return}
+    var label=editing?"Simpan Perubahan":"Simpan Pembaruan";
     btn.disabled=true;btn.textContent="Menyimpan...";
+    var bd="";
+    try{
+      if(f&&isVid(f)){
+        if(!f._ref)f._ref=await unggahVideo(callApi,f,vidMime(f),"bukti",PIN,function(p){btn.textContent="Mengunggah video "+p+"%"});
+        bd="ref:"+f._ref;
+      }else if(f){btn.textContent="Memproses foto...";bd=await compress(f)}
+    }catch(x){$("a-err").textContent=x.message;btn.disabled=false;btn.textContent=label;return}
+    btn.textContent="Menyimpan...";
     google.script.run.withSuccessHandler(function(n){
       var i=reports.findIndex(function(x){return x.id===sel});reports[i]=n;editing=false;flash="Beres! Pembaruan sudah tersimpan.";render();window.scrollTo(0,0);
     }).withFailureHandler(function(e){$("a-err").textContent=e.message;btn.disabled=false;btn.textContent=editing?"Simpan Perubahan":"Simpan Pembaruan"})
@@ -1452,7 +1476,7 @@ function unduh(jenis){
     .then(function(blob){
       simpanBlob(blob,"laporan-pekerjaan-prakom-"+tglCsv()+(filt!=="Semua"?"-"+filt.toLowerCase():"")+(jenis==="xlsx"?".xlsx":".docx"));
       var gagal=[],total=0;
-      if(withFoto)list.forEach(function(r){["foto","bukti"].forEach(function(k){if(r[k]){total++;if(!(hasilFoto[r.id]&&hasilFoto[r.id][k]))gagal.push(r)}})});
+      if(withFoto)list.forEach(function(r){["foto","bukti"].forEach(function(k){if(r[k]&&!linkVideo(r[k])){total++;if(!(hasilFoto[r.id]&&hasilFoto[r.id][k]))gagal.push(r)}})});
       if(!gagal.length)return set("Selesai. File sudah diunduh beserta foto.");
       var f0=FOTO[gagal[0].id]||{};
       return set("File diunduh, tetapi "+gagal.length+" dari "+total+" foto (kendala/bukti) tidak bisa diambil"+(f0.err?". Alasan dari server: "+f0.err:". Foto tidak terbaca dari server maupun dari Drive")+". Pastikan fungsi adminFoto sudah ditambahkan di Apps Script dan sudah Deploy New version.");
